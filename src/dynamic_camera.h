@@ -47,6 +47,57 @@ struct DynamicCamera {
         // lookahead) appropriately. Next,
         // set the camera center by offsetting the cameraUnadjustedCenter, combining lookAhead.
         // Finally update cameraUnadjustedCenter, but without lookahead.
+
+        sf::Vector2f trackedPosWindow = camera.worldToWindow(trackedPosWorld);
+        sf::Vector2f trackedVelocityWindow = camera.worldToWindowDist(trackedVelocityWorld);
+        float lookAheadWorld = camera.windowPercentToWorldDist({lookAhead, 0.0f}).x;
+
+        //std::cout << "pos: " << trackedPosWindow << "\n"
+        //          << "vel: " << trackedVelocityWindow << "\n";
+
+        // lookAheadWorld = 0;
+
+        if (trackedVelocityWindow.x > 0) { // right
+            lookaheadState += alpha * (lookAheadWorld - lookaheadState);
+            cameraUnadjustedCenter.x = lookaheadState + trackedPosWorld.x;
+
+        } else if (trackedVelocityWindow.x < 0) { // left
+            lookaheadState += alpha * (-lookAheadWorld - lookaheadState); 
+
+            cameraUnadjustedCenter.x = lookaheadState + trackedPosWorld.x;
+        } else {
+            lookaheadState += alpha * (0 - lookaheadState); 
+
+            cameraUnadjustedCenter.x = lookaheadState + trackedPosWorld.x;
+        }
+
+        std::cout << "lookahead: " << lookaheadState << "\n";
+
+        sf::Vector2f trackedPosPercent = camera.worldToWindowPercent(trackedPosWorld);
+
+        //std::cout << "trackedpospercent: " << trackedPosPercent.x << "\n";
+        
+        float softEMA{};
+
+        
+        if (!deadZoneX.contains(trackedPosPercent.x)) {
+            
+
+            //std::cout << "i am in soft zone" << "\n";
+            if (trackedPosPercent.x < deadZoneX.min) { // left
+                softEMA = alpha * (camera.getCameraSize().x * (trackedPosPercent.x - deadZoneX.min));
+                cameraUnadjustedCenter.x += softEMA;
+                std::cout << "left side: " << softEMA << "\n";
+            } else if (trackedPosPercent.x > deadZoneX.max) { // right
+                softEMA = alpha * (camera.getCameraSize().x * (trackedPosPercent.x - deadZoneX.max));
+                cameraUnadjustedCenter.x += softEMA;
+                std::cout << "right side" << softEMA << "\n";
+            }
+        } else {
+        
+        }
+        camera.setCameraCenter(cameraUnadjustedCenter);
+        //cameraUnadjustedCenter.x
     }
 
     float alpha;  // alpha to use for damping of camera position, *as well as* for smoothing of
