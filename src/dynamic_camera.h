@@ -66,9 +66,7 @@ struct DynamicCamera {
 
             cameraUnadjustedCenter.x = lookaheadState + trackedPosWorld.x;
         } else {
-            lookaheadState += alpha * (0 - lookaheadState); 
-
-            cameraUnadjustedCenter.x = lookaheadState + trackedPosWorld.x;
+            //lookaheadState += alpha * (0 - lookaheadState); 
         }
 
         std::cout << "lookahead: " << lookaheadState << "\n";
@@ -81,8 +79,6 @@ struct DynamicCamera {
 
         
         if (!deadZoneX.contains(trackedPosPercent.x)) {
-            
-
             //std::cout << "i am in soft zone" << "\n";
             if (trackedPosPercent.x < deadZoneX.min) { // left
                 softEMA = alpha * (camera.getCameraSize().x * (trackedPosPercent.x - deadZoneX.min));
@@ -97,7 +93,6 @@ struct DynamicCamera {
         
         }
         camera.setCameraCenter(cameraUnadjustedCenter);
-        //cameraUnadjustedCenter.x
     }
 
     float alpha;  // alpha to use for damping of camera position, *as well as* for smoothing of
